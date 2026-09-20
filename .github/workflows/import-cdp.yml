@@ -1,0 +1,23 @@
+name: Import CDP feature branch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/import-cdp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copy feature/cdp-v3 from source repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git clone --branch feature/cdp-v3 --single-branch https://github.com/ashneevai/CDP.git source
+          cd source
+          git remote add target "https://x-access-token:${GH_TOKEN}@github.com/ashneevai/CDP1.git"
+          git push target HEAD:refs/heads/feature/cdp-v3

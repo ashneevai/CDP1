@@ -1,5 +1,5 @@
-# One-time repository importer
-name: Import CDP feature branch
+# One-time reviewed-fix publisher
+name: Publish reviewed CDP fixes
 
 on:
   push:
@@ -11,18 +11,23 @@ permissions:
   contents: write
 
 jobs:
-  import:
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Copy feature/cdp-v3 from source repository
+      - name: Check out staged patches
+        uses: actions/checkout@v4
+
+      - name: Apply reviewed fixes to feature/cdp-v3
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git clone --branch feature/cdp-v3 --single-branch https://github.com/ashneevai/CDP.git source
-          cd source
+          git clone --branch feature/cdp-v3 --single-branch "https://x-access-token:${GH_TOKEN}@github.com/ashneevai/CDP1.git" target
+          cd target
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -r .github/workflows
-          git commit -m "Stage repository import without workflow files"
-          git remote add target "https://x-access-token:${GH_TOKEN}@github.com/ashneevai/CDP1.git"
-          git push target HEAD:refs/heads/feature/cdp-v3
+          git apply --index ../review-fixes-config.patch
+          git apply --index ../review-fixes-packages.patch
+          git apply --index ../review-fixes-scripts.patch
+          git apply --index ../review-fixes-tests.patch
+          git commit -m "Repair CI reliability and align governed regression tests"
+          git push origin HEAD:feature/cdp-v3

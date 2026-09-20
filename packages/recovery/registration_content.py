@@ -51,9 +51,7 @@ def identity_roi_reads_insurance_row(name_text: str, dob_text: str) -> bool:
     name_label_hits = sum(1 for token in _NAME_LABEL_TOKENS if token in name_u)
     if insurance_hits >= 2 and name_label_hits == 0:
         return True
-    if re.search(r"\bMEDICARE\b", name_u) and re.search(r"\bCHAMPVA\b", dob_u):
-        return True
-    return False
+    return bool(re.search(r"\bMEDICARE\b", name_u) and re.search(r"\bCHAMPVA\b", dob_u))
 
 
 def _ocr_region(image: Image.Image, box: tuple[int, int, int, int]) -> str:

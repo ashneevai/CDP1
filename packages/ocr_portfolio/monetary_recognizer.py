@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 import cv2
 import numpy as np
@@ -596,7 +597,7 @@ def monetary_variants_extended(crop: Image.Image) -> list[CropVariant]:
         )
     # Isolated connected components (largest ink blob).
     _, bw = cv2.threshold(arr, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    n_labels, labels, stats, _ = cv2.connectedComponentsWithStats(bw)
+    n_labels, _labels, stats, _ = cv2.connectedComponentsWithStats(bw)
     if n_labels > 1:
         # Skip background label 0; pick largest component.
         areas = stats[1:, cv2.CC_STAT_AREA]

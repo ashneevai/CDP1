@@ -89,16 +89,16 @@ describe("Claims IDP Enterprise UI Tests", () => {
     expect(screen.getByRole("tab", { name: /Settings/i })).toBeInTheDocument();
 
     // 3. Operational KPIs on Dashboard
-    expect(screen.getByText("STP Rate")).toBeInTheDocument();
-    expect(screen.getByText("Total Ingested")).toBeInTheDocument();
-    expect(screen.getByText("Pending HITL")).toBeInTheDocument();
+    expect(screen.getByText("True STP")).toBeInTheDocument();
+    expect(screen.getByText("Queue Documents")).toBeInTheDocument();
+    expect(screen.getByText("Open Review Tasks")).toBeInTheDocument();
 
     // 4. Verify tab switches and headings
     fireEvent.click(screen.getByRole("tab", { name: /Work Queue/i }));
     expect(screen.getByText("Universal Healthcare Claims Queue")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: /Document Review/i }));
-    expect(screen.getByText("Model Fallback Log")).toBeInTheDocument();
+    expect(screen.getByText("Live Review Context")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: /Audit Trail/i }));
     expect(screen.getByText("Chronological Claims Pipeline Log")).toBeInTheDocument();

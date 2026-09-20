@@ -282,17 +282,20 @@ def evaluate_parser_integrity(
         )
     if mapped:
         mapped_digits = "".join(mapped)
-        if mapped_digits != amount_digits and mapped_digits != raw_digits:
-            if "".join(dollars) + "".join(cents) != amount_digits:
-                return ParserIntegrityResult(
-                    False,
-                    normalized,
-                    raw_digits,
-                    glyph_count,
-                    len(mapped),
-                    tuple(reasons) + ("GLYPH_AMOUNT_MISMATCH",),
-                    "GLYPH_AMOUNT_MISMATCH",
-                )
+        if (
+            mapped_digits != amount_digits
+            and mapped_digits != raw_digits
+            and "".join(dollars) + "".join(cents) != amount_digits
+        ):
+            return ParserIntegrityResult(
+                False,
+                normalized,
+                raw_digits,
+                glyph_count,
+                len(mapped),
+                tuple(reasons) + ("GLYPH_AMOUNT_MISMATCH",),
+                "GLYPH_AMOUNT_MISMATCH",
+            )
         if len(mapped) != len(amount_digits):
             return ParserIntegrityResult(
                 False,
@@ -418,9 +421,11 @@ def _candidate_amounts(payload: dict | None) -> list[str]:
             continue
         bbox = cand.get("bounding_box")
         # Skip cents-clipped GEOMETRY shells — those are not authoritative.
-        if str(cand.get("preprocessing_variant") or "") == "GEOMETRY_CENTS":
-            if _region_is_cents_clipped(_region_tuple(bbox)):
-                continue
+        if (
+            str(cand.get("preprocessing_variant") or "") == "GEOMETRY_CENTS"
+            and _region_is_cents_clipped(_region_tuple(bbox))
+        ):
+            continue
         for key in ("value", "raw_value"):
             parsed = parse_currency(cand.get(key))
             if parsed is None:
@@ -682,8 +687,7 @@ def build_box24f_rows(service_lines: list[dict] | None) -> tuple[Box24FRowEviden
             raw_tokens.append(str(line.get("raw_charges")))
         if obs.get("raw_digit_sequence"):
             raw_tokens.append(str(obs["raw_digit_sequence"]))
-        for cand_amt in _candidate_amounts(line):
-            raw_tokens.append(cand_amt)
+        raw_tokens.extend(_candidate_amounts(line))
         rows.append(
             Box24FRowEvidence(
                 line_number=int(line.get("line_number") or index + 1),

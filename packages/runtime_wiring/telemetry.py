@@ -6,10 +6,11 @@ import json
 import os
 import threading
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 
 @dataclass
@@ -73,7 +74,7 @@ class StageTelemetry:
         t0 = time.perf_counter()
         try:
             yield inv
-        except Exception as exc:  # noqa: BLE001 — must not break OCR path
+        except Exception as exc:
             inv.exception = f"{type(exc).__name__}: {exc}"
             inv.fallback_reason = inv.fallback_reason or "STAGE_EXCEPTION"
             raise

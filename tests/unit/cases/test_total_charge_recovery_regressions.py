@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-
 from PIL import Image, ImageDraw
 
 from packages.claim_evidence.line_sum_authority import line_sum_auto_eligible
@@ -15,7 +13,7 @@ from packages.ocr_portfolio.monetary_recognizer import monetary_variants_extende
 
 
 def test_pos_11_never_charge_from_box_24b():
-    reject, reason = reject_pos_as_charge("11.00", (420.0, 1500.0, 470.0, 1540.0))
+    reject, _reason = reject_pos_as_charge("11.00", (420.0, 1500.0, 470.0, 1540.0))
     assert reject is True
 
 

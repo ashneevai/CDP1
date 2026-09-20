@@ -8,8 +8,9 @@ missing. Does not auto-accept fields.
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 
 @dataclass(frozen=True)

@@ -6,8 +6,8 @@ crop is proven inside Box 24F and outside Box 24B.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 # Reference dimensions from config/table_templates/cms1500_service_lines.yaml
 _REF_W = 1712.0
@@ -98,9 +98,9 @@ def charge_region_verdict(
 ) -> RegionVerdict:
     """Decide whether a crop is inside Box 24F (charges) vs Box 24B (POS)."""
     if image_size and not already_reference:
-        x0, y0, x1, y1 = scale_bbox_to_reference(bbox, image_size)
+        x0, _y0, x1, _y1 = scale_bbox_to_reference(bbox, image_size)
     else:
-        x0, y0, x1, y1 = bbox
+        x0, _y0, x1, _y1 = bbox
     pos0, pos1 = CMS1500_LINE_COLUMNS["place_of_service"]
     ch0, ch1 = CMS1500_LINE_COLUMNS["charges"]
     overlap_pos = _overlap_1d(x0, x1, pos0, pos1)
@@ -143,9 +143,7 @@ def is_pos_like_currency(value: object) -> bool:
     if text in _POS_LIKE_AMOUNTS:
         return True
     # Bare POS codes sometimes land in charge fields.
-    if text.isdigit() and 1 <= int(text) <= 99:
-        return True
-    return False
+    return bool(text.isdigit() and 1 <= int(text) <= 99)
 
 
 def reject_pos_as_charge(

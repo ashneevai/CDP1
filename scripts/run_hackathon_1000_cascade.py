@@ -189,7 +189,7 @@ def _probe_ocr_engines() -> dict[str, Any]:
     draw = ImageDraw.Draw(image)
     try:
         font = ImageFont.load_default()
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 -- optional font fallback
         font = None
     draw.text((12, 18), "HELLO 123", fill=0, font=font)
     router = OCRRouter(lambda _attempt: True)
@@ -345,8 +345,9 @@ def _prune_trace(app_out: Path) -> None:
 def _cms1500_template_version() -> str:
     """Pin finish/validate to the same CMS-1500 template the release registered."""
     try:
-        from packages.release_selection import active_release_from_env, select_release
         import yaml
+
+        from packages.release_selection import active_release_from_env, select_release
 
         manifest_path = select_release(active_release_from_env())
         manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8")) or {}
@@ -354,7 +355,7 @@ def _cms1500_template_version() -> str:
         version = str(versions.get("cms1500") or "").strip()
         if version:
             return version
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 -- fall back to explicit release name
         pass
     release = (os.environ.get("CDP_PIPELINE_RELEASE") or "").strip().casefold()
     if release in {"extraction-v3", "v3"}:

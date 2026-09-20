@@ -8,11 +8,10 @@ authority.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from .redesign_stack import load_redesign_stack
-
 
 DEFAULT_LADDER: tuple[str, ...] = (
     "local_paddle_rapid",

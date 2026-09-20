@@ -106,8 +106,8 @@ def test_currency_npi_bleed_yields_empty_for_hitl():
     assert "NPI_LABEL_BLEED" in selected.reason_codes
 
 
-def test_patient_name_policy_rejects_weak_e4_without_identity_confirmation():
-    """Critical patient_name requires strong E4 or MULTI_ATTRIBUTE identity E6."""
+def test_patient_name_policy_rejects_weak_e4_without_independent_confirmation():
+    """Weak E4 supports patient_name but cannot replace independent E2/E5/E6."""
     policy = EvidencePolicy.load(Path("config/evidence_policies.yaml"))
     bundle = EvidenceBundle(
         field_name="patient_name",
@@ -141,8 +141,11 @@ def test_patient_name_policy_rejects_weak_e4_without_identity_confirmation():
         "patient_name", CriticalityLevel.C2, bundle, document_family="CMS1500"
     )
     assert not ok
-    assert "E4" not in available
-    assert "E6" in missing or any("E6" in reason for reason in reasons)
+    # Weak format validation is eligible support for this field, but cannot
+    # authorize the value without independent E2, reference E5, or identity E6.
+    assert "E4" in available
+    assert missing == ("E2",)
+    assert any("E2" in reason for reason in reasons)
 
 
 def test_roi_insets_shrink_dob_and_charge_windows():

@@ -19,9 +19,9 @@ from .redesign_stack import (
 )
 
 __all__ = [
+    "DEFAULT_LADDER",
     "AcceptanceRiskEstimate",
     "CapabilitySpec",
-    "DEFAULT_LADDER",
     "LadderStep",
     "RedesignStack",
     "assert_ladder_order",

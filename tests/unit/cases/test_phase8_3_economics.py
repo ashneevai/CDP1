@@ -1,3 +1,6 @@
+import sys
+from types import ModuleType
+
 from PIL import Image
 
 from evaluation.phase8_2_performance import _semantic_output
@@ -15,7 +18,9 @@ def test_rapidocr_thread_budget_is_passed_without_semantic_wrapper_change(monkey
         def __call__(self, _image):
             return ([([[1, 2], [11, 2], [11, 8], [1, 8]], "A123", .9)], [0, 0, 0])
 
-    monkeypatch.setattr("rapidocr_onnxruntime.RapidOCR", Backend)
+    backend_module = ModuleType("rapidocr_onnxruntime")
+    backend_module.RapidOCR = Backend
+    monkeypatch.setitem(sys.modules, "rapidocr_onnxruntime", backend_module)
     extractor = RapidOCRTextExtractor(intra_op_num_threads=2, inter_op_num_threads=1)
 
     values = extractor.extract_region(Image.new("RGB", (100, 50), "white"), 0, 0, 50, 20)

@@ -84,7 +84,7 @@ def _warp(stem: str) -> Image.Image:
 
 def _components(gray: np.ndarray) -> list[dict]:
     ink = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-    n, labels, stats, centroids = cv2.connectedComponentsWithStats(ink, 8)
+    n, _labels, stats, centroids = cv2.connectedComponentsWithStats(ink, 8)
     out = []
     for i in range(1, n):
         x, y, w, h, area = (int(v) for v in stats[i])

@@ -49,7 +49,9 @@ def test_anchor_match_selects_actual_page_and_template():
     )
     assert result.template_id == cms.template_id
     assert result.page_number == 2
-    assert result.template_version == cms.version
+    # Dual-loaded templates share anchors; selection must use the active
+    # release pin rather than silently switching to lexicographic latest.
+    assert result.template_version == "02-12"
     assert result.reason == "ANCHOR_MATCH"
 
 

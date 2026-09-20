@@ -10,7 +10,6 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 import tempfile
 import zipfile
 from io import BytesIO
@@ -62,8 +61,8 @@ print(json.dumps({"texts": texts, "scores": scores}))
 
 
 def _v4_read(crop: Image.Image) -> dict:
-    from paddleocr import PaddleOCR
     import numpy as np
+    from paddleocr import PaddleOCR
 
     engine = PaddleOCR(
         use_angle_cls=False,

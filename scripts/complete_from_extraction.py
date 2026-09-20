@@ -198,13 +198,16 @@ def decide(extraction, family):
         ocr_block = field_payload.get('ocr') or {}
         for attempt in ocr_block.get('attempts') or []:
             reason = str(attempt.get('reason') or '')
-            if 'GEOMETRY_CENTS' in reason and 'UNDERREAD' not in reason:
-                if isinstance(attempt.get('observation'), dict):
-                    candidate_obs = dict(attempt['observation'])
-                    if candidate_obs.get('adopted') is False:
-                        continue
-                    obs = candidate_obs
-                    break
+            if (
+                'GEOMETRY_CENTS' in reason
+                and 'UNDERREAD' not in reason
+                and isinstance(attempt.get('observation'), dict)
+            ):
+                candidate_obs = dict(attempt['observation'])
+                if candidate_obs.get('adopted') is False:
+                    continue
+                obs = candidate_obs
+                break
         if obs is None:
             for cand in ocr_block.get('candidates') or []:
                 if str(cand.get('preprocessing_variant') or '') != 'GEOMETRY_CENTS':
@@ -346,7 +349,7 @@ def decide(extraction, family):
             else:
                 repaired_lines.append(line)
         service_lines = repaired_lines
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 -- optional repair must fail closed
         pass
     # Precision-safe charge total: prefer full-window / .00 over ruling-tail
     # and units-bleed cents before CLAIM_TOTAL / Box28↔line-sum bind.
@@ -391,9 +394,7 @@ def decide(extraction, family):
     # Prefer observed service-line Σ when box-28 is empty, suspicious-tiny, or
     # strongly contradicts multi-line charges (uncalibrated OCR soup).
     from packages.claim_evidence.line_sum_authority import (
-        line_sum_auto_eligible,
         parse_currency,
-        should_defer_box28_to_line_sum,
     )
     for charge_field in ('total_charge', 'total_charges'):
         if charge_field not in values:
@@ -829,7 +830,7 @@ def decide(extraction, family):
                         exact_confirmed.append(cand)
                         continue
                     if not amounts_within_tolerance(
-                        text, confirmed, absolute=Decimal('0.01'), relative=Decimal('0')
+                        text, confirmed, absolute=Decimal('0.01'), relative=Decimal(0)
                     ):
                         continue
                 filtered.append(cand)

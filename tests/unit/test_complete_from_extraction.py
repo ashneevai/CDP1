@@ -149,7 +149,8 @@ def test_line_sum_replaces_invalid_box28_ocr_candidate():
     charge = next(d for d in result["field_decisions"] if d["field_name"] == "total_charge")
     assert charge["selected_value"] == "564.00"
     assert "LINE_TOTALS_RECONCILED" in charge["reason_codes"]
-    assert "LINE_TOTALS_CORROBORATED" in charge["reason_codes"]
+    assert "LINE_TOTALS_UNCORROBORATED" in charge["reason_codes"]
+    assert "LINE_TOTALS_CORROBORATED" not in charge["reason_codes"]
 
 
 def test_uncorroborated_line_sum_does_not_auto_accept_charge():

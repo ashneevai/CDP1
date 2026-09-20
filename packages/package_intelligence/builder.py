@@ -202,9 +202,12 @@ def build_claim_package(
             PageClass.EOB,
         }
     ]
-    if len(primary) > 1 and not any(p.is_continuation for p in primary[1:]):
-        if len({p.page_index for p in primary}) < len(primary):
-            issues.append(PackageIssue.DUPLICATE_PAGE)
+    if (
+        len(primary) > 1
+        and not any(p.is_continuation for p in primary[1:])
+        and len({p.page_index for p in primary}) < len(primary)
+    ):
+        issues.append(PackageIssue.DUPLICATE_PAGE)
 
     if expected_page_count is not None and len(pages) < expected_page_count:
         issues.append(PackageIssue.MISSING_PAGE)

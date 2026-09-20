@@ -6,6 +6,7 @@ def test_runtime_rejects_evaluation_only_routes():
     assert set(runtime.ocr_routes) == {
         "federal_tax_no",
         "insured_id_number",
+        "insured_dob",
         "insured_name",
         "patient_dob",
         "patient_name",

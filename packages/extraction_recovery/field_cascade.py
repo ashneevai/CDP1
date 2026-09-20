@@ -207,7 +207,7 @@ def semantic_accept(
                     ):
                         return True, "CURRENCY_SHAPED_BOX28"
                     return False, "CURRENCY_POS_LIKE_REQUIRES_GEOMETRY"
-            except Exception:  # noqa: BLE001 — geometry package must not break cascade
+            except Exception:  # noqa: BLE001, S110 -- optional geometry must not break cascade
                 pass
             return True, "CURRENCY_SHAPED"
         return False, "NOT_CURRENCY_SHAPED"

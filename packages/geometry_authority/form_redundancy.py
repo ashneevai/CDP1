@@ -10,7 +10,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-
 _SELF_CODES = frozenset({"SELF", "18", "01", "1"})
 
 
@@ -140,11 +139,12 @@ def reconcile_box2_box4_names(
         return NameRedundancyResult(False, patient, insured, "NAME_MISSING")
     if not names_agree(patient, insured):
         return NameRedundancyResult(False, patient, insured, "NAME_MISMATCH")
-    if relationship is not None and str(relationship).strip():
-        if not relationship_is_self(relationship):
-            return NameRedundancyResult(
-                False, patient, insured, "RELATIONSHIP_NOT_SELF"
-            )
+    if (
+        relationship is not None
+        and str(relationship).strip()
+        and not relationship_is_self(relationship)
+    ):
+        return NameRedundancyResult(False, patient, insured, "RELATIONSHIP_NOT_SELF")
     return NameRedundancyResult(True, patient, insured, "BOX2_BOX4_SELF_AGREE")
 
 
@@ -168,9 +168,10 @@ def reconcile_box3_box11a_dob(
         return DobRedundancyResult(False, patient, insured, "DOB_UNSHAPED")
     if patient != insured:
         return DobRedundancyResult(False, patient, insured, "DOB_MISMATCH")
-    if relationship is not None and str(relationship).strip():
-        if not relationship_is_self(relationship):
-            return DobRedundancyResult(
-                False, patient, insured, "RELATIONSHIP_NOT_SELF"
-            )
+    if (
+        relationship is not None
+        and str(relationship).strip()
+        and not relationship_is_self(relationship)
+    ):
+        return DobRedundancyResult(False, patient, insured, "RELATIONSHIP_NOT_SELF")
     return DobRedundancyResult(True, patient, insured, "BOX3_BOX11A_SELF_AGREE")

@@ -8,7 +8,6 @@ Does not invent ground truth. Writes diagnostics under --out-dir.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import zipfile
 from collections import Counter
@@ -17,7 +16,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -191,7 +190,7 @@ def main() -> None:
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     from packages.image_evidence import analyze_roi
-    from packages.ocr_portfolio import recognize_monetary_crop, shape_monetary
+    from packages.ocr_portfolio import recognize_monetary_crop
 
     rows = _load_rows(args.results)
     empty_rows = []
@@ -217,7 +216,7 @@ def main() -> None:
                 img, config="--oem 3 --psm 8 -c tessedit_char_whitelist=0123456789,.$"
             ).strip()
             return raw, 0.6
-        except Exception:
+        except Exception:  # noqa: BLE001 -- optional diagnostic OCR backend
             return "", 0.0
 
     for idx, row in enumerate(empty_rows):

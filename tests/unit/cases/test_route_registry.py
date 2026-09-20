@@ -43,7 +43,7 @@ def decision_context() -> DecisionContext:
 def test_registry_enforces_explicit_route_lifecycle():
     registry = RouteRegistry.load()
 
-    assert len(registry.routes) == 9
+    assert len(registry.routes) == 10
     assert {route.status for route in registry.routes} == {
         RouteLifecycle.PRODUCTION_APPROVED,
         RouteLifecycle.EVALUATION_ONLY,
@@ -51,13 +51,14 @@ def test_registry_enforces_explicit_route_lifecycle():
     assert {route.field for route in registry.routes_for_mode("runtime")} == {
         "federal_tax_no",
         "insured_id_number",
+        "insured_dob",
         "insured_name",
         "patient_dob",
         "patient_name",
         "provider_npi",
         "total_charge",
     }
-    assert len(registry.routes_for_mode("evaluation")) == 9
+    assert len(registry.routes_for_mode("evaluation")) == 10
     assert registry.routes_for_mode("shadow") == ()
 
 

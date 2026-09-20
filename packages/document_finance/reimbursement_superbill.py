@@ -228,7 +228,7 @@ def parse_reimbursement_superbill(
             c = parse_money(match.group("c")) if match.group("c") else None
             try:
                 qty = Decimal(b_raw)
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001, S112 -- malformed quantity is not a line item
                 continue
             if a is None:
                 continue

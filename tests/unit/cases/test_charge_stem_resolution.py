@@ -116,7 +116,7 @@ def test_ruling_tick_rows_are_dropped_and_cents_glue_blocks_auto():
     assert resolved[0]["charges"] == "49.00"
     assert resolved[0].get("cents_unresolved") is True
     assert not line_has_gpt4o_local_consensus(resolved[0])
-    ok, reason = line_sum_auto_eligible(resolved)
+    ok, _reason = line_sum_auto_eligible(resolved)
     assert not ok
 
 

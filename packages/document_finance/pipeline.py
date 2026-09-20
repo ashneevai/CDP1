@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from .discrepancy import DiscrepancyLedger, DiscrepancyKind, DiscrepancyRecord
+from .discrepancy import DiscrepancyKind, DiscrepancyLedger, DiscrepancyRecord
 from .families import DocumentFamily, FamilyClassification, classify_document_family
 from .reimbursement_superbill import ReimbursementPageResult, parse_reimbursement_superbill
 from .running_statement import LedgerReconcileResult, parse_running_account_statement

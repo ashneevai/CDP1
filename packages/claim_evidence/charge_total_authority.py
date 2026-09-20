@@ -12,7 +12,6 @@ like ``251.00 → 25.00``.
 from __future__ import annotations
 
 import re
-from typing import Any
 
 from packages.claim_evidence.line_sum_authority import (
     format_currency,
@@ -77,9 +76,7 @@ def is_ruling_tail_extension(shorter: object, longer: object) -> bool:
         return False
     if b.startswith(a) and len(b) == len(a) + 1 and b[-1] in {"1", "4", "5"}:
         return True
-    if a.startswith(b) and len(a) == len(b) + 1 and a[-1] in {"1", "4", "5"}:
-        return True
-    return False
+    return bool(a.startswith(b) and len(a) == len(b) + 1 and a[-1] in {"1", "4", "5"})
 
 
 def _variant(cand: dict) -> str:

@@ -26,7 +26,6 @@ from packages.extraction_recovery import (
 )
 from packages.extraction_recovery.field_cascade import (
     FieldCascade,
-    charge_column_windows,
     charge_windows_for_mode,
     field_requires_independent_confirmation,
     semantic_accept,
@@ -894,8 +893,9 @@ def _reject_pos_code_charge(value, raw) -> bool:
     if not value:
         return False
     try:
-        from packages.geometry_authority import is_pos_like_currency
         import re as _re_pos
+
+        from packages.geometry_authority import is_pos_like_currency
 
         if not is_pos_like_currency(value):
             return False
@@ -994,7 +994,7 @@ def _recover_empty_monetary_crop(image, bbox, *, field_name='charges', claim_id=
         # Reuse cascade paddle via numpy array path if available.
         try:
             from workers.cascade.paddle_adapter import recognize as paddle_recognize
-        except Exception:
+        except Exception:  # noqa: BLE001 -- optional Paddle adapter
             try:
                 from paddleocr import PaddleOCR
 
@@ -1011,7 +1011,7 @@ def _recover_empty_monetary_crop(image, bbox, *, field_name='charges', claim_id=
                             texts.append(str(line[1][0]))
                             confs.append(float(line[1][1]))
                 return " ".join(texts), (sum(confs) / len(confs) if confs else 0.0)
-            except Exception as exc:  # noqa: BLE001
+            except Exception:  # noqa: BLE001
                 return "", 0.0
         return paddle_recognize(img)
 
@@ -1030,7 +1030,7 @@ def _recover_empty_monetary_crop(image, bbox, *, field_name='charges', claim_id=
                     texts.append(str(row[1]))
                     confs.append(float(row[2]) if len(row) > 2 else 0.0)
             return " ".join(texts), (sum(confs) / len(confs) if confs else 0.0)
-        except Exception:
+        except Exception:  # noqa: BLE001 -- optional Paddle fallback
             return "", 0.0
 
     engines = {
@@ -1376,8 +1376,9 @@ def _merge_gpt4o_line_charge(
         # Vision read with no usable local: one ruling-split digit pass.
         # Agreement mints the local side of gpt+local consensus; mismatch stays HITL.
         try:
-            from packages.claim_evidence.line_sum_authority import amounts_within_tolerance
             from decimal import Decimal
+
+            from packages.claim_evidence.line_sum_authority import amounts_within_tolerance
 
             supported = False
             for cand in candidates or []:
@@ -1385,17 +1386,17 @@ def _merge_gpt4o_line_charge(
                 if 'gpt4o' in eng or 'gpt-4o' in eng:
                     continue
                 seed = (cand or {}).get('value')
-                if seed and amounts_within_tolerance(value, seed, absolute=Decimal('1'), relative=Decimal('0')):
+                if seed and amounts_within_tolerance(value, seed, absolute=Decimal(1), relative=Decimal(0)):
                     supported = True
                     break
             if not supported:
                 d_cands, d_attempts, d_reason = _recognize_charge_digits_only(image, bbox)
                 attempts = list(attempts or []) + list(d_attempts or [])
                 d_val = d_cands[0].get('value') if d_cands else None
-                if d_val and amounts_within_tolerance(value, d_val, absolute=Decimal('1'), relative=Decimal('0')):
+                if d_val and amounts_within_tolerance(value, d_val, absolute=Decimal(1), relative=Decimal(0)):
                     candidates = list(candidates or []) + list(d_cands)
                     reason = f'{reason}|{d_reason}|CHARGE_AI_LOCAL_CONFIRM'
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001, S110 -- optional residual confirmation
             pass
     return value, raw, candidates, attempts, reason
 
@@ -1555,7 +1556,7 @@ def _currency_value_from_candidates(raw_text, candidates) -> str | None:
             recovered = recover_dollars_from_split_raw(str(c.get('raw_value') or ''))
             if recovered:
                 shaped_vals.append(recovered)
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001, S110 -- optional monetary shaping
             pass
         seed = (c.get('value') or '').strip() or (c.get('raw_value') or '').strip()
         if not seed:
@@ -1587,7 +1588,7 @@ def _currency_value_from_candidates(raw_text, candidates) -> str | None:
             shaped = shape_monetary(cleaned)
             if shaped:
                 shaped_vals.append(shaped)
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001, S110 -- optional monetary shaping
             pass
     if not shaped_vals:
         return _currency_value_from_text(raw_text)
@@ -1600,7 +1601,7 @@ def _currency_value_from_candidates(raw_text, candidates) -> str | None:
             if preferred_ink:
                 best = preferred_ink
                 continue
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001, S110 -- optional monetary preference
             pass
         preferred = prefer_currency_without_digit_drop(best, other)
         if preferred:
@@ -1991,7 +1992,7 @@ def recognize_service_lines(image, router, template):
                         score = min(score, int(best.get('_score') or 0))
                     elif preferred == value and preferred != best.get('charges'):
                         score = max(score, int(best.get('_score') or 0) + 1)
-                except Exception:  # noqa: BLE001
+                except Exception:  # noqa: BLE001, S110 -- optional ink preference
                     pass
             candidate = {
                 'line_number': row_index + 1,
@@ -2110,7 +2111,7 @@ def recognize_service_lines(image, router, template):
                     if lines:
                         break
                     continue
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001, S110 -- optional geometry rejection
                 pass
             # Single-engine fallback lines still need gpt-4o corroboration for
             # empty-box-28 LINE_TOTALS AUTO (SINGLE_LINE_GPT4O_LOCAL).
@@ -2188,10 +2189,9 @@ def recognize_service_lines(image, router, template):
                 line_bboxes=bboxes,
                 local_recognize=_local_on_bbox if router is not None else None,
             )
-            for row in recovered:
-                # Prefer currency shaped from gpt; if local also shaped a twin,
-                # _currency_value style merge already lives in candidates.
-                lines.append(row)
+            # Prefer currency shaped from gpt; if local also shaped a twin,
+            # _currency_value style merge already lives in candidates.
+            lines.extend(recovered)
     from packages.ocr_portfolio.monetary_recognizer import apply_charge_line_resolution
 
     return apply_charge_line_resolution(lines)
@@ -2420,7 +2420,7 @@ def recognize_regions(image, geometry, router, emit=lambda rows: None, template=
                 field.setdefault('_box28_crop_variants', [
                     list(_clamp_bbox(v, image.width, image.height)) for v in variants[1:]
                 ])
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001, S110 -- optional crop variants
                 pass
         # Ranking requires every geometry field in the OCR artifact. Out-of-scope
         # fields get empty stubs (no OCR engines) so STP-critical stays fast.
@@ -2910,7 +2910,7 @@ def run(directory, output):
         report['fields'] = rows
         (output / 'OCRCandidates.json').write_text(json.dumps(report, indent=2, default=str, allow_nan=False), encoding='utf-8')
     template = _load_cms1500_template()
-    from packages.runtime_wiring import get_telemetry, reset_telemetry, stage_enabled
+    from packages.runtime_wiring import reset_telemetry, stage_enabled
 
     tel = reset_telemetry()
     claim_id = str(telemetry.get('document_id') or '')[:16]

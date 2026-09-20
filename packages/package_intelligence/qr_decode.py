@@ -51,7 +51,7 @@ def decode_page_qr(image: Any) -> QrDecodeResult:
         if ok and decoded:
             texts.extend(str(t).strip() for t in decoded if str(t or "").strip())
             reasons.append("QR_MULTI_DECODE")
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 -- fall back to single-code decode
         pass
     if not texts:
         try:

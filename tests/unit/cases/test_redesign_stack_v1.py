@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from PIL import Image
+
 from packages.architecture import (
     assert_ladder_order,
     charge_residual_ladder,
@@ -12,10 +14,9 @@ from packages.architecture import (
     next_step_after,
 )
 from packages.ocr.independence import independence_group
-from workers.openocr_svtr import openocr_svtr_enabled, recognize_openocr_svtr
-from workers.monkeyocr import monkeyocr_enabled, recognize_table
 from workers.complex_tables import complex_tables_enabled, recognize_complex_table
-from PIL import Image
+from workers.monkeyocr import monkeyocr_enabled, recognize_table
+from workers.openocr_svtr import openocr_svtr_enabled, recognize_openocr_svtr
 
 
 def test_redesign_stack_loads_capability_table():

@@ -467,7 +467,7 @@ def line_has_gpt4o_local_consensus(line: dict) -> bool:
 
         if ruling_geometry_supports_charge(candidates, target_txt):
             return True
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 -- optional geometry must fail closed
         pass
 
     # gpt-4o-attributed selection is fine when a usable independent local
@@ -492,13 +492,15 @@ def line_has_gpt4o_local_consensus(line: dict) -> bool:
             continue
         local_txt = format_currency(local_amt)
         # POS codes (11) and implausible tails are not votes against a vision read.
-        if _pos_like(local_txt) and not _pos_like(gpt_txt):
-            # A POS-shaped dollar stem that is the same amount within $1
-            # (34.00 beside ruled 34.25) is not a place-of-service code.
-            if not _exact_or_dollar_agree(local_txt, gpt_txt) and not _exact_or_dollar_agree(
-                local_txt, target_txt
-            ):
-                continue
+        # A POS-shaped dollar stem that is the same amount within $1
+        # (34.00 beside ruled 34.25) is not a place-of-service code.
+        if (
+            _pos_like(local_txt)
+            and not _pos_like(gpt_txt)
+            and not _exact_or_dollar_agree(local_txt, gpt_txt)
+            and not _exact_or_dollar_agree(local_txt, target_txt)
+        ):
+            continue
         if is_implausible_corroborator(local_txt, gpt_txt):
             continue
         if is_suspicious_tiny_total(local_amt) and not is_suspicious_tiny_total(gpt_amt):
@@ -510,7 +512,7 @@ def line_has_gpt4o_local_consensus(line: dict) -> bool:
     if not usable_by_family:
         return False
 
-    for _fam, texts in usable_by_family.items():
+    for texts in usable_by_family.values():
         if not any(
             _exact_or_dollar_agree(target_txt, text) and _exact_or_dollar_agree(gpt_txt, text)
             for text in texts
@@ -594,7 +596,7 @@ def line_sum_auto_eligible(
             # Even with corroborators, POS-like totals need non-POS corroboration.
             if box is not None and is_pos_like_currency(format_currency(box)):
                 return False, "POS_LIKE_LINE_SUM_REJECTED"
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 -- optional geometry must fail closed
         pass
 
     lines = [ln for ln in (service_lines or []) if isinstance(ln, dict)]

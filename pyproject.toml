@@ -30,7 +30,9 @@ dependencies = [
     "opentelemetry-api>=1.24",
     "opentelemetry-sdk>=1.24",
     "structlog>=24.1",
-    "httpx>=0.27",
+    # The services honor HTTP(S)/ALL_PROXY through httpx.  Declare the SOCKS
+    # transport so importing a service cannot fail when ALL_PROXY uses socks5.
+    "httpx[socks]>=0.27",
     "tenacity>=8.2",
 ]
 
@@ -127,7 +129,7 @@ idp-qualify-vnext = "scripts.qualify_vnext:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["packages*", "apps*", "workers*", "evaluation*"]
+include = ["packages*", "apps*", "workers*", "evaluation*", "scripts*", "datasets*"]
 exclude = ["tests*", "dataset_raw*", "deploy*", "docs*", "config*"]
 
 [tool.pytest.ini_options]

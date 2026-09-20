@@ -8,18 +8,22 @@ setup:
 test: test-unit
 
 test-unit:
-	pytest tests/unit tests/architecture -q -p no:cacheprovider --basetemp=.test-tmp/pytest
+	@mkdir -p .test-tmp
+	python -m pytest tests/unit tests/architecture -q -p no:cacheprovider --basetemp=.test-tmp/pytest
 
 test-golden:
-	pytest tests/golden -q -m golden -p no:cacheprovider --basetemp=.test-tmp/golden
+	@mkdir -p .test-tmp
+	python -m pytest tests/golden -q -m golden -p no:cacheprovider --basetemp=.test-tmp/golden
 
 test-integration:
 	docker compose up -d --wait
-	pytest tests/integration -q -m integration -p no:cacheprovider --basetemp=.test-tmp/integration
+	@mkdir -p .test-tmp
+	python -m pytest tests/integration -q -m integration -p no:cacheprovider --basetemp=.test-tmp/integration
 	docker compose down
 
 test-performance:
-	pytest tests/performance -q -m performance -p no:cacheprovider --basetemp=.test-tmp/performance
+	@mkdir -p .test-tmp
+	python -m pytest tests/performance -q -m performance -p no:cacheprovider --basetemp=.test-tmp/performance
 
 architecture:
 	python scripts/check_architecture.py

@@ -73,7 +73,7 @@ def _unique_complete_line_charges(service_lines: list[dict] | None) -> list[Deci
         bbox = line.get("charge_bbox") or line.get("bbox")
         region = line.get("semantic_region") or line.get("authorised_semantic_region")
         if bbox and isinstance(bbox, (list, tuple)) and len(bbox) == 4:
-            reject, reason = reject_pos_as_charge(
+            reject, _reason = reject_pos_as_charge(
                 raw,
                 (float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3])),
                 geometry_region=str(region) if region else None,
@@ -232,15 +232,18 @@ def reconcile_claim_total(
     # Direct total corroborated by line sum within $0.01.
     if box is not None and line_sum is not None:
         ls = parse_currency(line_sum)
-        if ls is not None and abs(box - ls) <= Decimal("0.01"):
-            if independent_evidence_paths >= 1 or charge_column_verified:
-                return FinancialReconcileResult(
-                    disposition=FinancialDisposition.DIRECT_TOTAL_CORROBORATED,
-                    accepted_total=format_currency(box),
-                    line_sum=line_sum,
-                    reasons=("BOX28_MATCHES_LINE_SUM",),
-                    details=details,
-                )
+        if (
+            ls is not None
+            and abs(box - ls) <= Decimal("0.01")
+            and (independent_evidence_paths >= 1 or charge_column_verified)
+        ):
+            return FinancialReconcileResult(
+                disposition=FinancialDisposition.DIRECT_TOTAL_CORROBORATED,
+                accepted_total=format_currency(box),
+                line_sum=line_sum,
+                reasons=("BOX28_MATCHES_LINE_SUM",),
+                details=details,
+            )
         if ls is not None and abs(box - ls) > Decimal("0.01"):
             return FinancialReconcileResult(
                 disposition=FinancialDisposition.TOTAL_CONFLICT,

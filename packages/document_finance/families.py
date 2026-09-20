@@ -7,7 +7,7 @@ must use its own parser. Classification evidence is persisted for audit.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 

@@ -42,10 +42,14 @@ def _ai_agrees_with_local(field_name: str, ai_value: str, local_value: str) -> b
             return True
         ai_toks = _name_tokens(ai_value)
         local_toks = _name_tokens(local_value)
-        if len(ai_toks) >= 2 and len(local_toks) >= 2:
-            if ai_toks == local_toks[-len(ai_toks) :] or local_toks == ai_toks[-len(local_toks) :]:
-                return True
-        return False
+        return bool(
+            len(ai_toks) >= 2
+            and len(local_toks) >= 2
+            and (
+                ai_toks == local_toks[-len(ai_toks) :]
+                or local_toks == ai_toks[-len(local_toks) :]
+            )
+        )
     if "dob" in name or name.endswith("_date") or "date" in name:
         return False
     return False

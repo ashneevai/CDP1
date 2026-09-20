@@ -101,7 +101,7 @@ def analyze_roi(
     contrast = float(np.clip(gray.std() / 64.0, 0.0, 1.0))
     _, ink = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     ink_density = float(np.count_nonzero(ink) / ink.size)
-    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(ink)
+    num_labels, _labels, stats, _ = cv2.connectedComponentsWithStats(ink)
     connected = max(0, int(num_labels) - 1)
     # Form guideline dashes: many short horizontal components, almost no vertical mass.
     ruling_only = False

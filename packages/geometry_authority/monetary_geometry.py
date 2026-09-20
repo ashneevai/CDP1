@@ -360,8 +360,8 @@ def template_signature(gray: np.ndarray) -> str:
     width = max(1, gray.shape[1])
     y0, y1 = locate_value_band(gray)
     ruling = find_cents_ruling(gray[y0:y1, :] if y1 > y0 else gray)
-    y_bin = int(round((y0 / height) * 20))
-    r_bin = -1 if ruling is None else int(round((ruling / width) * 20))
+    y_bin = round((y0 / height) * 20)
+    r_bin = -1 if ruling is None else round((ruling / width) * 20)
     return f"cms-band-y{y_bin}-r{r_bin}"
 
 
@@ -371,7 +371,7 @@ def _clean_amount_text(text: str) -> str:
         return ""
     # Ruling ticks and confusables that sit on a digit, not a new glyph.
     raw = raw.replace(",", "")
-    if raw.startswith(":") or raw.startswith("."):
+    if raw.startswith((":", ".")):
         raw = raw[1:]
     raw = raw.replace(":", ".").replace("$", "")
     raw = raw.replace("q", "0").replace("Q", "0").replace("g", "0").replace("G", "0")
@@ -385,9 +385,14 @@ def _clean_amount_text(text: str) -> str:
 
 def _shaped_decimal(text: str) -> tuple[str, str] | None:
     parts = text.split(".")
-    if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit() and len(parts[1]) == 2:
-        if parts[0]:
-            return parts[0], parts[1]
+    if (
+        len(parts) == 2
+        and parts[0]
+        and parts[0].isdigit()
+        and parts[1].isdigit()
+        and len(parts[1]) == 2
+    ):
+        return parts[0], parts[1]
     return None
 
 
@@ -766,7 +771,7 @@ def assign_monetary_zone(canonical_cx: float, *, cents_x: float, units_x: float)
         from packages.geometry_authority.cms1500_regions import CMS1500_LINE_COLUMNS
 
         ch0, _ch1 = CMS1500_LINE_COLUMNS["charges"]
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001, S110 -- retain conservative default boundary
         pass
     if canonical_cx < ch0 - 12:
         return "outside"
@@ -855,13 +860,13 @@ def reconstruct_from_canonical_glyphs(
 
     def _provenance(dollars: list[PageGlyph], cents: list[PageGlyph]) -> dict:
         zoned = list(dollars) + list(cents) + list(units)
-        return dict(
-            page_glyph_polygons=tuple(g.page_polygon for g in zoned),
-            canonical_glyph_centres=tuple((g.canonical_cx, g.canonical_cy) for g in zoned),
-            dollar_glyphs=tuple(g.text for g in dollars),
-            cents_glyphs=tuple(g.text for g in cents),
-            unit_zone_glyphs=tuple(g.text for g in units),
-        )
+        return {
+            "page_glyph_polygons": tuple(g.page_polygon for g in zoned),
+            "canonical_glyph_centres": tuple((g.canonical_cx, g.canonical_cy) for g in zoned),
+            "dollar_glyphs": tuple(g.text for g in dollars),
+            "cents_glyphs": tuple(g.text for g in cents),
+            "unit_zone_glyphs": tuple(g.text for g in units),
+        }
 
     def _split_at(boundary: float) -> tuple[list[PageGlyph], list[PageGlyph]]:
         left = [g for g in charge_digits if g.canonical_cx < boundary]
@@ -1043,11 +1048,7 @@ def read_monetary_crop(
                     ch for ch in canonical_read.raw_glyph_sequence if ch.isdigit()
                 )
                 accept_tess = False
-                if not rapid_digit_check or rapid_digit_check == geo_digits:
-                    accept_tess = True
-                elif len(geo_digits) >= len(rapid_digit_check):
-                    accept_tess = True
-                elif (
+                if not rapid_digit_check or rapid_digit_check == geo_digits or len(geo_digits) >= len(rapid_digit_check) or (
                     rapid_digit_check.startswith(geo_digits)
                     and len(rapid_digit_check) <= len(geo_digits) + 1
                 ):
@@ -1116,7 +1117,7 @@ def read_monetary_crop(
                 geometry_authorised=authorised,
                 units_x=units_x,
             )
-    except Exception:
+    except Exception:  # noqa: BLE001 -- optional OCR backend failure is non-authoritative
         rapid_read = None
     rapid_digits = ""
     if rapid_read is not None:
